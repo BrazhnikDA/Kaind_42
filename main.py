@@ -8,7 +8,7 @@ import shutil
 def WriteLog(text):
     now = datetime.datetime.now()
     file = open('C:\\bin\\kaind_42.log', 'a')
-    print("Текущее время: ", now)
+    #print("Текущее время: ", now)
     file.seek(0, 2)  # перемещение курсора в конец файла
 
     month = str(now.month)
@@ -48,12 +48,12 @@ KEY_FIND_ERROR = "Пустое значение параметра: номер �
 
 def Replace(_pathIn, _pathOut):
     os.replace(_pathIn, _pathOut)
-    print("Файл перемещён из " + _pathIn + " В " + _pathOut)
+    #print("Файл перемещён из " + _pathIn + " В " + _pathOut)
 
 
 def Copy(_pathIn, _pathOut):
     shutil.copyfile(_pathIn, _pathOut)
-    print("Файл скопирован из " + _pathIn + " В " + _pathOut)
+    #print("Файл скопирован из " + _pathIn + " В " + _pathOut)
 
 
 def ReadFile(_path):
@@ -61,9 +61,9 @@ def ReadFile(_path):
     line = file.readline()
     if line == KEY_FIND_ERROR:
         file.close
-        print("FIND: " + line.strip() + "    PATH - " + _path)
+        #print("FIND: " + line.strip() + "    PATH - " + _path)
         return True
-    print("No find: " + line.strip())
+    #print("No find: " + line.strip())
     file.close
     return False
 
@@ -76,9 +76,9 @@ def GetFilesInFolderBad(_path):
 def GetFilesInFolderBackup(_path, _name):
     content = os.listdir(_path)
 
-    print("Все файлы в Backup: ")
-    for n in content:
-        print(n)
+    #print("Все файлы в Backup: ")
+    #for n in content:
+        #print(n)
 
     error = []
     for file in content:
@@ -88,7 +88,7 @@ def GetFilesInFolderBackup(_path, _name):
     for name in content:
         for minName in _name:
             if name[:30] == minName[:30]:
-                print("Bad: Name[30], BackUp: _Name[30] ", name[:30], minName[:30])
+                #print("Bad: Name[30], BackUp: _Name[30] ", name[:30], minName[:30])
                 out.append(name)
     return out
 
@@ -98,7 +98,7 @@ def GetListFiles(_path):
     content = os.listdir(_path)
     error = []
     for file in content:
-        if os.path.isfile(os.path.join(_path, file)) and file.endswith('.err'):  # Добавить txt
+        if os.path.isfile(os.path.join(_path, file)) and file.endswith('.err'):
             error.append(file)
     return error
 
@@ -111,7 +111,6 @@ def GetListFolders(_path):
 
 
 def WorkInArchive(_path):
-    # pathToFile = 'E:\\Backup\\2021-03-05\\81930654.002.002.110921.110407.txt'
     file_mode = 'rb+'
     out = ""
     find = ""
@@ -123,7 +122,7 @@ def WorkInArchive(_path):
                 IsFind = False
                 if not line:
                     break
-                print(line.strip())
+                #print(line.strip())
                 if line[1] == '\t':
                     if line[2] == '4' and line[3] == '2':
                         find = line
@@ -139,10 +138,10 @@ def WorkInArchive(_path):
                 if IsFind == False:
                     out += line
 
-    print("Find - " + find)
+    #print("Find - " + find)
 
-    print("Стало:")
-    print(out)
+    #print("Стало:")
+    #print(out)
 
     file_mode = 'wb+'
     with gzip.open(_path, file_mode) as output:
@@ -155,7 +154,8 @@ def WorkInArchive(_path):
         return False
 
 
-def checkFolder(name):
+def checkNameFolder(name):
+    # Good = 2021-10-05
     if len(name) == 10:
         if name[0] == '2':
             if name[1] == '0':
@@ -191,15 +191,15 @@ def main():
         if len(foldersBackup) >= m:
             freshFolderBackup = foldersBackup[len(foldersBackup) - m]  # Получить последнюю по дате папку в Z:/Backup
         else: break
-        if checkFolder(freshFolderBackup):
+        if checkNameFolder(freshFolderBackup):
             break
         m = m + 1
-    print("Самая свежая папка Backup - ", freshFolderBackup)
+    #print("Самая свежая папка Backup - ", freshFolderBackup)
     filesInFolder = GetFilesInFolderBackup(PathFolderBackup + freshFolderBackup,
                                            currentFile)  # Получить файлы из Z:/Backup где первые 30 символов в названии совпадают с файлами из Z:/Bad
-    print("Найденные файлы с совпавшим названием: ")
-    for n in filesInFolder:
-        print(n)
+    #print("Найденные файлы с совпавшим названием: ")
+    #for n in filesInFolder:
+        #print(n)
 
     if len(filesInFolder) < 1:
         textLog += 'Backup не содержит нужных файлов'
@@ -207,7 +207,7 @@ def main():
         return
     else:
         textLog += 'Файлы в Backup найдены (' + str(len(filesInFolder)) + '), '
-        print("Файлы в backup найдены")
+        #print("Файлы в backup найдены")
 
     # Зайти в архив gzip если строчка где во 2-ом столбце имеется цифра 42 удалить строку и так до конца, сохранить файл и заорхивировать его обратно в gzip
     i = 0
@@ -218,7 +218,12 @@ def main():
                  PathFolderSource + pathArchive)  # Если хотя бы 1 строка была удалена, то создать копию файла по пути который указан 2-ым параметром
             Replace(PathFolderBad + freshFolderBad + "\\" + currentFile[i], PathFolderArchive + currentFile[i])
             i += 1
-    textLog += ' Архив ' + '(' + str(i) + ')' + ' исправлен, файлы скопированы и перенесены. '
+
+    if(i == 0):
+        textLog += ' Ни один архив не содержит строку 42. '
+    else:
+        textLog += ' Архив ' + '(' + str(i) + ')' + ' исправлен, файлы скопированы и перенесены. '
+
     WriteLog(textLog)
 
 
