@@ -82,7 +82,7 @@ def GetFilesInFolderBackup(_path, _name):
 
     error = []
     for file in content:
-        if os.path.isfile(os.path.join(_path, file)) and file.endswith('.txt'):
+        if os.path.isfile(os.path.join(_path, file)) and file.endswith('.txt'):     # В папке backup ищем только файлы с расширением .txt
             error.append(file)
     out = []
     for name in content:
@@ -98,7 +98,7 @@ def GetListFiles(_path):
     content = os.listdir(_path)
     error = []
     for file in content:
-        if os.path.isfile(os.path.join(_path, file)) and file.endswith('.err'):
+        if os.path.isfile(os.path.join(_path, file)) and file.endswith('.err'):     # В папке bad ищем только файлы с расширением .err
             error.append(file)
     return error
 
@@ -229,4 +229,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-    input()
