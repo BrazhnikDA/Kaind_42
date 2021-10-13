@@ -8,7 +8,7 @@ import shutil
 def WriteLog(text):
     now = datetime.datetime.now()
     file = open('C:\\bin\\kaind_42.log', 'a')
-    #print("Текущее время: ", now)
+    # print("Текущее время: ", now)
     file.seek(0, 2)  # перемещение курсора в конец файла
 
     month = str(now.month)
@@ -48,12 +48,12 @@ KEY_FIND_ERROR = "Пустое значение параметра: номер �
 
 def Replace(_pathIn, _pathOut):
     os.replace(_pathIn, _pathOut)
-    #print("Файл перемещён из " + _pathIn + " В " + _pathOut)
+    # print("Файл перемещён из " + _pathIn + " В " + _pathOut)
 
 
 def Copy(_pathIn, _pathOut):
     shutil.copyfile(_pathIn, _pathOut)
-    #print("Файл скопирован из " + _pathIn + " В " + _pathOut)
+    # print("Файл скопирован из " + _pathIn + " В " + _pathOut)
 
 
 def ReadFile(_path):
@@ -61,9 +61,9 @@ def ReadFile(_path):
     line = file.readline()
     if line == KEY_FIND_ERROR:
         file.close
-        #print("FIND: " + line.strip() + "    PATH - " + _path)
+        # print("FIND: " + line.strip() + "    PATH - " + _path)
         return True
-    #print("No find: " + line.strip())
+    # print("No find: " + line.strip())
     file.close
     return False
 
@@ -76,19 +76,20 @@ def GetFilesInFolderBad(_path):
 def GetFilesInFolderBackup(_path, _name):
     content = os.listdir(_path)
 
-    #print("Все файлы в Backup: ")
-    #for n in content:
-        #print(n)
+    # print("Все файлы в Backup: ")
+    # for n in content:
+    # print(n)
 
     error = []
     for file in content:
-        if os.path.isfile(os.path.join(_path, file)) and file.endswith('.txt'):     # В папке backup ищем только файлы с расширением .txt
+        if os.path.isfile(os.path.join(_path, file)) and file.endswith(
+                '.txt'):  # В папке backup ищем только файлы с расширением .txt
             error.append(file)
     out = []
     for name in content:
         for minName in _name:
             if name[:30] == minName[:30]:
-                #print("Bad: Name[30], BackUp: _Name[30] ", name[:30], minName[:30])
+                # print("Bad: Name[30], BackUp: _Name[30] ", name[:30], minName[:30])
                 out.append(name)
     return out
 
@@ -98,7 +99,8 @@ def GetListFiles(_path):
     content = os.listdir(_path)
     error = []
     for file in content:
-        if os.path.isfile(os.path.join(_path, file)) and file.endswith('.err'):     # В папке bad ищем только файлы с расширением .err
+        if os.path.isfile(os.path.join(_path, file)) and file.endswith(
+                '.err'):  # В папке bad ищем только файлы с расширением .err
             error.append(file)
     return error
 
@@ -122,7 +124,7 @@ def WorkInArchive(_path):
                 IsFind = False
                 if not line:
                     break
-                #print(line.strip())
+                # print(line.strip())
                 if line[1] == '\t':
                     if line[2] == '4' and line[3] == '2':
                         find = line
@@ -138,10 +140,10 @@ def WorkInArchive(_path):
                 if IsFind == False:
                     out += line
 
-    #print("Find - " + find)
+    # print("Find - " + find)
 
-    #print("Стало:")
-    #print(out)
+    # print("Стало:")
+    # print(out)
 
     file_mode = 'wb+'
     with gzip.open(_path, file_mode) as output:
@@ -166,7 +168,45 @@ def checkNameFolder(name):
     return False
 
 
+# Првоерка на доступ к папке (параметр - путь до папки)
+def checkAccessFolder(_path):
+    __file__ = _path
+    if os.access(__file__, os.F_OK) == False:
+        return False
+    if os.access(__file__, os.R_OK) == False:
+        return False
+    if os.access(__file__, os.W_OK) == False:
+        return False
+    if os.access(__file__, os.X_OK) == False:
+        return False
+
+    return True
+
+
 def main():
+    textLog = ''
+    count = 0
+
+    if checkAccessFolder(PathFolderBad) == False:
+        textLog += 'Нет доступа к ' + PathFolderBad + ', '
+        count += 1
+
+    if checkAccessFolder(PathFolderBackup) == False:
+        textLog += ' Нет доступа к ' + PathFolderBackup + ', '
+        count += 1
+
+    if checkAccessFolder(PathFolderArchive) == False:
+        textLog += ' Нет доступа к ' + PathFolderArchive + ', '
+        count += 1
+
+    if checkAccessFolder(PathFolderSource) == False:
+        textLog += ' Нет доступа к ' + PathFolderSource
+        count += 1
+
+    if count > 0:
+        WriteLog(textLog)
+        return
+
     foldersBad = GetListFolders(PathFolderBad)  # Получить названия папок в Z:/Bad
     freshFolderBad = foldersBad[len(foldersBad) - 1]  # Получить последнюю (самую свежую по дате) папку в Z:/Bad
     filesInFolder = GetFilesInFolderBad(PathFolderBad + freshFolderBad)  # Получить файлы в свежой папке
@@ -190,16 +230,17 @@ def main():
     while True:
         if len(foldersBackup) >= m:
             freshFolderBackup = foldersBackup[len(foldersBackup) - m]  # Получить последнюю по дате папку в Z:/Backup
-        else: break
+        else:
+            break
         if checkNameFolder(freshFolderBackup):
             break
         m = m + 1
-    #print("Самая свежая папка Backup - ", freshFolderBackup)
+    # print("Самая свежая папка Backup - ", freshFolderBackup)
     filesInFolder = GetFilesInFolderBackup(PathFolderBackup + freshFolderBackup,
                                            currentFile)  # Получить файлы из Z:/Backup где первые 30 символов в названии совпадают с файлами из Z:/Bad
-    #print("Найденные файлы с совпавшим названием: ")
-    #for n in filesInFolder:
-        #print(n)
+    # print("Найденные файлы с совпавшим названием: ")
+    # for n in filesInFolder:
+    # print(n)
 
     if len(filesInFolder) < 1:
         textLog += 'Backup не содержит нужных файлов'
@@ -207,7 +248,7 @@ def main():
         return
     else:
         textLog += 'Файлы в Backup найдены (' + str(len(filesInFolder)) + '), '
-        #print("Файлы в backup найдены")
+        # print("Файлы в backup найдены")
 
     # Зайти в архив gzip если строчка где во 2-ом столбце имеется цифра 42 удалить строку и так до конца, сохранить файл и заорхивировать его обратно в gzip
     i = 0
@@ -219,7 +260,7 @@ def main():
             Replace(PathFolderBad + freshFolderBad + "\\" + currentFile[i], PathFolderArchive + currentFile[i])
             i += 1
 
-    if(i == 0):
+    if (i == 0):
         textLog += ' Ни один архив не содержит строку 42. '
     else:
         textLog += ' Архив ' + '(' + str(i) + ')' + ' исправлен, файлы скопированы и перенесены. '
